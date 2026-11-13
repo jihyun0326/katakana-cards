@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>가타카나 카드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* layout: single study column, question card on top, answer cards below, mistake log underneath */
+:root{
+  --bg:#f3f4f7; --card:#ffffff; --ink:#1d2333; --muted:#5d6475; --faint:#8b91a0; --line:#dcdfe6;
+  --accent:#2f4a8a; --accent-bg:#e4e9f5;
+  --ok:#22744a; --ok-bg:#e1f2e8; --ok-line:#9fd2b4;
+  --no:#b23a2e; --no-bg:#fbe6e3; --no-line:#eeb0a8;
+  --warn:#8a5a0b; --warn-bg:#fbefd6;
+  --jp:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
+  --ui:"Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#16181d; --card:#1b1e24; --ink:#c3c7cf; --muted:#8a909c; --faint:#666c78; --line:#2a2e37;
+  --accent:#8796b8; --accent-bg:#232a38;
+  --ok:#8db39c; --ok-bg:#1d2a24; --ok-line:#34503f;
+  --no:#c48e87; --no-bg:#2c2123; --no-line:#553a38;
+  --warn:#b9a274; --warn-bg:#2a261d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#16181d; --card:#1b1e24; --ink:#c3c7cf; --muted:#8a909c; --faint:#666c78; --line:#2a2e37;
+  --accent:#8796b8; --accent-bg:#232a38;
+  --ok:#8db39c; --ok-bg:#1d2a24; --ok-line:#34503f;
+  --no:#c48e87; --no-bg:#2c2123; --no-line:#553a38;
+  --warn:#b9a274; --warn-bg:#2a261d; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5;padding:24px 16px 48px}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+h1{font-family:var(--jp);font-size:22px;margin:0;font-weight:700;letter-spacing:.02em}
+h1 span{color:var(--muted);font-family:var(--ui);font-size:14px;font-weight:400;margin-left:6px}
+.sync{font-size:12px;color:var(--faint)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;padding:7px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--accent-bg);color:var(--accent);font-weight:500}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:13px;padding:7px 12px;border-radius:10px;cursor:pointer}
+.btn:hover{border-color:var(--faint)}
+.btn.mini{font-size:12px;padding:4px 10px;color:var(--muted)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stats{display:flex;gap:14px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;align-items:center}
+.stats b{color:var(--ink);font-weight:500}
+.bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar div{height:100%;background:var(--accent);width:0;transition:width .25s}
+.q{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:40px 16px 20px;text-align:center}
+.q .hint{font-size:13px;color:var(--faint)}
+.q .big{font-family:var(--jp);font-size:88px;line-height:1;font-weight:500}
+.tag{position:absolute;top:12px;font-size:12px;padding:3px 10px;border-radius:8px}
+.tag.l{left:12px;background:var(--warn-bg);color:var(--warn)}
+.tag.r{right:12px;background:var(--no-bg);color:var(--no)}
+.play{width:80px;height:80px;border-radius:50%;border:1px solid var(--line);background:var(--accent-bg);color:var(--accent);cursor:pointer;display:grid;place-items:center}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:460px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card{height:84px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:inherit}
+.card .m{font-size:24px;font-weight:500}
+.card .m.jp{font-family:var(--jp);font-size:30px}
+.card .s{font-size:13px;color:var(--muted);visibility:hidden;font-family:var(--jp)}
+.card.show .s{visibility:visible}
+.card.ok{background:var(--ok-bg);border-color:var(--ok-line);color:var(--ok)}
+.card.no{background:var(--no-bg);border-color:var(--no-line);color:var(--no)}
+.card.ok .s,.card.no .s{color:inherit}
+.type{display:flex;flex-direction:column;gap:6px}
+.type-row{display:flex;gap:8px}
+.type input{flex:1;min-width:0;height:52px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;font-size:20px;padding:0 14px;font-family:var(--jp)}
+.type input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.type input.ok{background:var(--ok-bg);border-color:var(--ok-line);color:var(--ok)}
+.type input.no{background:var(--no-bg);border-color:var(--no-line);color:var(--no)}
+.btn.primary{background:var(--accent);color:var(--card);border-color:var(--accent);padding:0 20px;font-weight:500}
+.type-help{font-size:12px;color:var(--faint)}
+.type-err{font-size:13px;color:var(--no);min-height:0}
+.type-err:empty{display:none}
+.draw{display:flex;flex-direction:column;align-items:center;gap:10px}
+.pad{position:relative;width:min(100%,300px);aspect-ratio:1/1;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;touch-action:none}
+.pad::before{content:"";position:absolute;left:50%;top:8%;bottom:8%;border-left:1px dashed var(--line);pointer-events:none}
+.pad::after{content:"";position:absolute;top:50%;left:8%;right:8%;border-top:1px dashed var(--line);pointer-events:none}
+.pad canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;cursor:crosshair}
+.ghost{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--jp);font-size:min(220px,62vw);line-height:1;color:var(--accent);opacity:.32;pointer-events:none;z-index:2}
+.draw-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.chart h2{font-size:15px;margin:0;font-weight:700}
+.legend{font-size:12px;color:var(--faint);display:flex;align-items:center;gap:6px}
+.legend .sw{width:12px;height:12px;border-radius:3px;background:var(--warn-bg);border:1px solid var(--warn)}
+.cgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.cell{border:1px solid var(--line);border-radius:10px;padding:8px 2px 6px;text-align:center;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cell .kk{font-family:var(--jp);font-size:26px;font-weight:500;line-height:1.1}
+.cell .rr{font-size:11px;color:var(--muted);font-family:var(--jp);white-space:nowrap}
+.cell.conf{background:var(--warn-bg);border-color:var(--warn)}
+.cell.conf .rr{color:var(--warn)}
+.cell.blank{border:0}
+@media (max-width:400px){.cell .kk{font-size:22px}}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:38px}
+.fb{font-size:14px;color:var(--muted)}
+.fb.ok{color:var(--ok)} .fb.no{color:var(--no)}
+.next{white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:520px}
+.chip{font-size:13px;padding:3px 10px;border-radius:8px;background:var(--no-bg);color:var(--no)}
+.log{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.log h2{font-size:15px;margin:0;font-weight:700}
+.log .sub{font-size:12px;color:var(--faint);margin:4px 0 8px}
+.row{display:grid;grid-template-columns:44px minmax(0,1fr) 90px 44px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.row .k{font-family:var(--jp);font-size:24px;font-weight:500}
+.row .r{color:var(--muted);font-family:var(--jp)}
+.row .n{text-align:right;color:var(--no);font-variant-numeric:tabular-nums}
+.meter{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--no)}
+.done{font-size:12px;padding:1px 8px;border-radius:6px;background:var(--ok-bg);color:var(--ok);margin-left:4px;font-family:var(--ui)}
+.empty{font-size:13px;color:var(--muted);padding:8px 0}
+@media (prefers-reduced-motion:reduce){.bar div{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>カタカナ<span>가타카나 카드</span></h1>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <span class="sync" id="sync">기록을 불러오는 중…</span>
+      <button class="btn mini" id="chart-btn" aria-expanded="false" aria-controls="chart">전체 보기</button>
+      <button class="btn mini" id="th" aria-label="화면 테마">테마: 자동</button>
+      <button class="btn mini" id="snd" aria-label="소리">소리 켬</button>
+    </div>
+  </header>
+
+  <section class="chart" id="chart" hidden>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <h2>가타카나 전체 46자</h2>
+      <span class="legend"><span class="sw"></span>헷갈리는 글자</span>
+    </div>
+    <div class="cgrid" id="cgrid"></div>
+  </section>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="문제 방식">
+      <button id="m-mix" class="on">섞어서</button>
+      <button id="m-see">글자 보고</button>
+      <button id="m-hear">발음 보고</button>
+    </div>
+    <div class="stats">
+      <span>문제 <b id="no">1</b> / <span id="len">46</span></span>
+      <span>정답 <b id="sc">0</b></span>
+      <span>연속 <b id="st">0</b></span>
+      <button class="btn" id="rs">초기화</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="문제 세트">
+      <button data-set="all" class="on">전체 46자</button>
+      <button data-set="conf">헷갈리는 글자 17자</button>
+      <button data-set="wrong" id="setw">틀린 글자 0</button>
+    </div>
+    <div class="seg" role="group" aria-label="답하는 방식">
+      <button id="a-mix" class="on">섞어서</button>
+      <button id="a-card">카드 고르기</button>
+      <button id="a-type">직접 쓰기</button>
+    </div>
+  </div>
+
+  <div class="bar"><div id="bar"></div></div>
+  <div class="q" id="q"><span class="hint">카드를 준비하는 중…</span></div>
+  <div class="grid" id="g"></div>
+  <form class="type" id="tp" hidden autocomplete="off">
+    <div class="type-row">
+      <input id="ans" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-describedby="ans-help ans-err">
+      <button class="btn primary" type="submit" id="chk">확인</button>
+    </div>
+    <div class="type-help" id="ans-help"></div>
+    <div class="type-err" id="ans-err" role="alert"></div>
+  </form>
+  <div class="draw" id="dr" hidden>
+    <div class="pad"><canvas id="cv" aria-label="가타카나를 그리는 칸"></canvas><div class="ghost" id="ghost" hidden></div></div>
+    <div class="type-err" id="dr-err" role="alert"></div>
+    <div class="draw-act" id="dr-act1">
+      <button class="btn" type="button" id="dr-clr">지우기</button>
+      <button class="btn primary" type="button" id="dr-chk">정답 확인</button>
+    </div>
+    <div class="draw-act" id="dr-act2" hidden>
+      <span class="type-help">내가 쓴 글자와 겹쳐 보고 직접 채점하세요</span>
+      <button class="btn" type="button" id="dr-no">틀렸어요</button>
+      <button class="btn primary" type="button" id="dr-ok">맞았어요</button>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="fb" id="fb"></span>
+    <button class="btn next" id="nx" hidden>다음 →</button>
+  </div>
+
+  <section class="log">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <h2>자주 틀린 가타카나</h2>
+      <button class="btn" id="clr" style="font-size:12px;padding:4px 10px">기록 지우기</button>
+    </div>
+    <p class="sub">틀린 횟수 순 · 연속 2번 맞히면 틀린 글자 세트에서 빠져요 (기록은 남아요)</p>
+    <div id="log"></div>
+  </section>
+</div>
+
+<script>
+const K=[["ア","a","あ"],["イ","i","い"],["ウ","u","う"],["エ","e","え"],["オ","o","お"],["カ","ka","か"],["キ","ki","き"],["ク","ku","く"],["ケ","ke","け"],["コ","ko","こ"],["サ","sa","さ"],["シ","shi","し"],["ス","su","す"],["セ","se","せ"],["ソ","so","そ"],["タ","ta","た"],["チ","chi","ち"],["ツ","tsu","つ"],["テ","te","て"],["ト","to","と"],["ナ","na","な"],["ニ","ni","に"],["ヌ","nu","ぬ"],["ネ","ne","ね"],["ノ","no","の"],["ハ","ha","は"],["ヒ","hi","ひ"],["フ","fu","ふ"],["ヘ","he","へ"],["ホ","ho","ほ"],["マ","ma","ま"],["ミ","mi","み"],["ム","mu","む"],["メ","me","め"],["モ","mo","も"],["ヤ","ya","や"],["ユ","yu","ゆ"],["ヨ","yo","よ"],["ラ","ra","ら"],["リ","ri","り"],["ル","ru","る"],["レ","re","れ"],["ロ","ro","ろ"],["ワ","wa","わ"],["ヲ","wo","を"],["ン","n","ん"]];
+const GROUPS=[["シ","ツ"],["ソ","ン"],["ク","ケ"],["ヌ","ス"],["マ","ム"],["ワ","ウ","フ"],["チ","テ"],["コ","ユ"]];
+const byC=Object.fromEntries(K.map(k=>[k[0],k]));
+const groupOf=c=>GROUPS.find(g=>g.includes(c));
+const CONF=K.filter(k=>groupOf(k[0]));
+const LKEY="kq_wrong_log_v1";
+const $=id=>document.getElementById(id);
+const lbl=k=>k[0]+" "+k[1]+" ("+k[2]+")";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let rec={};
+try{rec=JSON.parse(localStorage.getItem(LKEY))||{};}catch(e){}
+let dbRef=null,writing=false,pending=false;
+
+function persist(){
+  try{localStorage.setItem(LKEY,JSON.stringify(rec));}catch(e){}
+  if(!dbRef)return;
+  if(writing){pending=true;return;}
+  writing=true;
+  dbRef.set({rec:JSON.parse(JSON.stringify(rec)),updatedAt:Date.now()})
+    .catch(()=>{$("sync").textContent="동기화 실패 · 이 기기에는 저장됨";})
+    .finally(()=>{writing=false;if(pending){pending=false;persist();}});
+}
+
+async function connect(){
+  const sync=$("sync");
+  if(!window.claude||!window.claude.use){sync.textContent="이 브라우저에만 저장돼요";return;}
+  try{
+    const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
+    const uid=user?await user.id():null;
+    if(!db||!uid){sync.textContent="로그인하면 기기 간에 기록이 이어져요";return;}
+    dbRef=db.doc("data/users/"+uid+"/katakana");
+    const snap=await dbRef.get();
+    if(snap.exists&&snap.data().rec){
+      rec=JSON.parse(JSON.stringify(snap.data().rec));
+      try{localStorage.setItem(LKEY,JSON.stringify(rec));}catch(e){}
+      renderLog();
+    }else if(Object.keys(rec).length){persist();}
+    sync.textContent="내 계정에 저장 중 · 휴대폰에서도 이어져요";
+  }catch(e){sync.textContent="이 브라우저에만 저장돼요";dbRef=null;}
+}
+
+const ALT={shi:["si"],chi:["ti"],tsu:["tu"],fu:["hu"],n:["nn"]};
+const norm=s=>s.normalize("NFKC").trim().toLowerCase().replace(/\s+/g,"");
+function accepts(k){
+  const a=[k[1],...(ALT[k[1]]||[]),k[2]];
+  if(mode==="hear")a.push(k[0]);
+  return a;
+}
+const ROW_FIX={shi:"s",chi:"t",tsu:"t",fu:"h",n:"n"};
+const rowOf=k=>ROW_FIX[k[1]]??k[1].slice(0,-1);
+const colOf=k=>k[1]==="n"?null:k[1].slice(-1);
+function buildOpts(c){
+  const o=[c],add=k=>{if(k&&!o.includes(k)&&o.length<4)o.push(k);};
+  const g=groupOf(c[0]);
+  if(g)g.forEach(x=>add(byC[x]));
+  const sameRow=shuf(K.filter(k=>k!==c&&rowOf(k)===rowOf(c)));
+  const sameCol=shuf(K.filter(k=>k!==c&&colOf(c)&&colOf(k)===colOf(c)));
+  if(!o.some(k=>k!==c&&rowOf(k)===rowOf(c)))add(sameRow[0]);
+  if(!o.some(k=>k!==c&&colOf(c)&&colOf(k)===colOf(c)))add(sameCol.find(k=>!o.includes(k)));
+  shuf(sameRow.concat(sameCol)).forEach(add);
+  shuf(K).forEach(add);
+  return o;
+}
+const ROUNDS=2;
+let modePick="mix",stylePick="mix",style="card";
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+let mode="see",set="all",deck=[],idx=0,cur,opts,answered=false,sc=0,st=0,wrong=[];
+const wrongPool=()=>K.filter(k=>rec[k[0]]&&rec[k[0]].w>0&&rec[k[0]].streak<2);
+
+const PKEY="kq_prefs_v1";
+let prefs={theme:"auto",sound:true};
+try{Object.assign(prefs,JSON.parse(localStorage.getItem(PKEY))||{});}catch(e){}
+const TH_LABEL={auto:"테마: 자동",dark:"테마: 다크",light:"테마: 라이트"};
+function applyPrefs(){
+  if(prefs.theme==="auto")delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme=prefs.theme;
+  $("th").textContent=TH_LABEL[prefs.theme];
+  $("snd").textContent=prefs.sound?"소리 켬":"소리 끔";
+  if(ctx)ctx.strokeStyle=ctx.fillStyle=getComputedStyle(document.body).color;
+  try{localStorage.setItem(PKEY,JSON.stringify(prefs));}catch(e){}
+}
+$("th").onclick=()=>{prefs.theme={auto:"dark",dark:"light",light:"auto"}[prefs.theme];applyPrefs();};
+$("snd").onclick=()=>{prefs.sound=!prefs.sound;if(!prefs.sound)try{speechSynthesis.cancel();}catch(e){}applyPrefs();};
+function say(t){if(!prefs.sound)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="ja-JP";u.rate=0.8;speechSynthesis.speak(u);}catch(e){}}
+function shuf(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+function renderLog(){
+  const list=K.filter(k=>rec[k[0]]&&rec[k[0]].w>0).sort((a,b)=>rec[b[0]].w-rec[a[0]].w);
+  $("setw").textContent="틀린 글자 "+wrongPool().length;
+  if(!list.length){$("log").innerHTML='<div class="empty">아직 틀린 글자가 없어요. 문제를 풀면 여기에 쌓여요.</div>';return;}
+  const max=rec[list[0][0]].w;
+  $("log").innerHTML=list.map(k=>{const r=rec[k[0]];
+    return '<div class="row"><span class="k">'+k[0]+'</span><span class="r">'+k[1]+' · '+k[2]+(r.streak>=2?'<span class="done">극복</span>':'')+'</span><span class="meter"><span style="width:'+Math.round(r.w/max*100)+'%"></span></span><span class="n">'+r.w+'회</span></div>';}).join("");
+}
+
+function stats(){
+  $("no").textContent=deck.length?Math.min(idx+1,deck.length):0;
+  $("sc").textContent=sc;$("st").textContent=st;
+  $("bar").style.width=(deck.length?idx/deck.length*100:0)+"%";
+}
+
+function reset(){
+  const pool=set==="all"?K:set==="conf"?CONF:wrongPool();
+  deck=[];for(let i=0;i<ROUNDS;i++)deck.push(...pool);
+  deck=shuf(deck);
+  for(let i=1;i<deck.length;i++){
+    if(deck[i]!==deck[i-1])continue;
+    for(let j=i+1;j<deck.length;j++){
+      if(deck[j]!==deck[i-1]&&deck[j+1]!==deck[i]&&deck[j-1]!==deck[i]){[deck[i],deck[j]]=[deck[j],deck[i]];break;}
+    }
+  }
+  idx=0;sc=0;st=0;wrong=[];
+  $("len").textContent=deck.length;renderLog();stats();
+  if(!deck.length){
+    $("tp").hidden=true;$("dr").hidden=true;
+    $("q").innerHTML='<div style="font-size:16px;font-weight:500">틀린 글자가 없어요</div><div class="hint">전체나 헷갈리는 글자 세트를 먼저 풀어보세요</div>';
+    $("g").innerHTML="";$("fb").textContent="";$("nx").hidden=true;return;
+  }
+  show();
+}
+
+function show(){
+  stats();
+  if(idx>=deck.length)return finish();
+  answered=false;cur=deck[idx];
+  mode=modePick==="mix"?rnd(["see","hear"]):modePick;
+  if(mode==="hear")style=stylePick==="card"?"card":stylePick==="type"?"draw":rnd(["card","draw"]);
+  else style=stylePick==="mix"?rnd(["card","type"]):stylePick;
+  const grp=groupOf(cur[0]);
+  opts=shuf(buildOpts(cur));
+  const r=rec[cur[0]];
+  const tags=(grp?'<span class="tag l">헷갈리는 글자 '+grp.join(" · ")+'</span>':'')+(r&&r.w?'<span class="tag r">'+r.w+'번 틀림</span>':'');
+  if(mode==="see"){
+    $("q").innerHTML=tags+'<span class="hint">이 글자는 어떻게 읽을까요?</span><span class="big">'+cur[0]+'</span>';
+  }else{
+    $("q").innerHTML=tags+'<span class="hint">'+(style==="draw"?"이 발음의 가타카나를 아래 칸에 써보세요":"이 발음은 어떤 가타카나일까요?")+'</span><span class="big" style="font-family:var(--ui);font-size:64px;letter-spacing:.02em">'+cur[1]+'</span>';
+  }
+  const g=$("g");g.innerHTML="";
+  g.hidden=style!=="card";$("tp").hidden=style!=="type";$("dr").hidden=style!=="draw";
+  if(style==="draw"){
+    setupCanvas();revealed=false;
+    $("ghost").hidden=true;$("dr-act1").hidden=false;$("dr-act2").hidden=true;$("dr-err").textContent="";
+    $("fb").className="fb";$("fb").textContent="";
+    $("nx").hidden=true;
+    return;
+  }
+  if(style==="type"){
+    const inp=$("ans");inp.value="";inp.className="";inp.readOnly=false;
+    inp.placeholder=mode==="see"?"shi 또는 し":"shi, し 또는 シ";
+    $("ans-help").textContent=mode==="see"?"영어 발음이나 히라가나로 쓰세요 (si·ti·tu·hu도 정답)":"들은 소리를 영어 발음, 히라가나, 가타카나 중 편한 걸로 쓰세요";
+    $("ans-err").textContent="";$("chk").hidden=false;
+    inp.focus({preventScroll:true});
+    $("fb").className="fb";$("fb").textContent="";
+    $("nx").hidden=true;
+    return;
+  }
+  opts.forEach(o=>{
+    const b=document.createElement("button");b.className="card";
+    b.innerHTML=mode==="see"
+      ?'<span class="m">'+o[1]+'</span><span class="s">'+o[0]+' · '+o[2]+'</span>'
+      :'<span class="m jp">'+o[0]+'</span><span class="s">'+o[1]+' · '+o[2]+'</span>';
+    b.onclick=()=>pick(b,o);g.appendChild(b);
+  });
+  $("fb").className="fb";$("fb").textContent="정답이라고 생각하는 카드를 골라보세요";
+  $("nx").hidden=true;
+}
+
+function pick(b,o){
+  if(answered)return;
+  [...$("g").children].forEach((x,i)=>{x.classList.add("show");if(opts[i]===cur)x.classList.add("ok");});
+  if(o!==cur)b.classList.add("no");
+  grade(o===cur,"");
+}
+function submitTyped(e){
+  e.preventDefault();
+  if(answered){$("nx").click();return;}
+  const inp=$("ans"),v=norm(inp.value);
+  if(!v){$("ans-err").textContent="답을 입력하세요";inp.focus();return;}
+  const ok=accepts(cur).map(norm).includes(v);
+  inp.readOnly=true;inp.className=ok?"ok":"no";$("chk").hidden=true;
+  grade(ok,ok?"":"  (입력: "+inp.value.trim()+")");
+}
+let ctx=null,drawn=false,drawing=false,revealed=false,last=null;
+function setupCanvas(){
+  const cv=$("cv"),r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;
+  cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);
+  ctx=cv.getContext("2d");ctx.setTransform(d,0,0,d,0,0);
+  ctx.lineCap="round";ctx.lineJoin="round";ctx.lineWidth=Math.max(6,r.width/30);
+  ctx.strokeStyle=ctx.fillStyle=getComputedStyle(document.body).color;
+  drawn=false;
+}
+function pt(e){const r=$("cv").getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
+$("cv").addEventListener("pointerdown",e=>{
+  if(revealed||!ctx)return;e.preventDefault();
+  drawing=true;$("cv").setPointerCapture(e.pointerId);last=pt(e);
+  ctx.beginPath();ctx.arc(last.x,last.y,ctx.lineWidth/2,0,Math.PI*2);ctx.fill();
+  drawn=true;$("dr-err").textContent="";
+});
+$("cv").addEventListener("pointermove",e=>{
+  if(!drawing)return;const p=pt(e);
+  ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;
+});
+["pointerup","pointercancel","pointerleave"].forEach(t=>$("cv").addEventListener(t,()=>{drawing=false;}));
+$("dr-clr").onclick=()=>{if(!revealed)setupCanvas();};
+$("dr-chk").onclick=()=>{
+  if(!drawn){$("dr-err").textContent="글자를 먼저 그려주세요";return;}
+  revealed=true;$("ghost").textContent=cur[0];$("ghost").hidden=false;
+  $("dr-act1").hidden=true;$("dr-act2").hidden=false;
+};
+$("dr-ok").onclick=()=>{if(answered)return;$("dr-act2").hidden=true;grade(true,"");};
+$("dr-no").onclick=()=>{if(answered)return;$("dr-act2").hidden=true;grade(false,"");};
+function grade(ok,extra){
+  answered=true;
+  const grp=groupOf(cur[0]);
+  const hint=grp?"  ·  "+grp.filter(c=>c!==cur[0]).map(c=>lbl(byC[c])).join(" / "):"";
+  const r=rec[cur[0]]||(rec[cur[0]]={w:0,streak:0});
+  if(ok){sc++;st++;r.streak++;$("fb").className="fb ok";$("fb").textContent="정답! "+lbl(cur)+hint;}
+  else{st=0;r.w++;r.streak=0;wrong.push(cur);$("fb").className="fb no";$("fb").textContent="오답 · "+lbl(cur)+extra+hint;}
+  if(!r.w)delete rec[cur[0]];
+  persist();renderLog();
+  say(cur[0]);
+  $("sc").textContent=sc;$("st").textContent=st;
+  $("nx").textContent=idx===deck.length-1?"결과 보기 →":"다음 →";
+  $("nx").hidden=false;
+  if(style==="card")$("nx").focus({preventScroll:true});
+}
+
+function finish(){
+  $("bar").style.width="100%";$("no").textContent=deck.length;
+  const wp=wrongPool().length;
+  const w=wrong.length
+    ?'<div class="hint">이번 세트에서 틀린 글자</div><div class="chips">'+wrong.map(k=>'<span class="chip">'+esc(lbl(k))+'</span>').join("")+'</div>'
+    :'<div style="color:var(--ok);font-size:14px">전부 맞혔어요</div>';
+  $("q").innerHTML='<span class="hint">세트 완료</span><div style="font-size:36px;font-weight:700;font-variant-numeric:tabular-nums">'+sc+' / '+deck.length+'</div>'+w+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:6px"><button class="btn" id="again">새 구성으로 다시</button>'+(wp?'<button class="btn" id="gow">틀린 글자 '+wp+'개 풀기</button>':'')+'</div>';
+  $("again").onclick=reset;
+  if(wp)$("gow").onclick=()=>pickSet("wrong");
+  $("g").innerHTML="";$("tp").hidden=true;$("dr").hidden=true;$("fb").textContent="";$("nx").hidden=true;
+}
+
+function pickSet(s){set=s;document.querySelectorAll("[data-set]").forEach(x=>x.classList.toggle("on",x.dataset.set===s));reset();}
+document.querySelectorAll("[data-set]").forEach(x=>x.onclick=()=>pickSet(x.dataset.set));
+$("nx").onclick=()=>{idx++;show();};
+$("rs").onclick=reset;
+$("clr").onclick=()=>{
+  const c=$("clr");
+  if(c.dataset.c){rec={};persist();c.textContent="기록 지우기";delete c.dataset.c;if(set==="wrong")reset();else renderLog();}
+  else{c.dataset.c="1";c.textContent="한 번 더 누르면 삭제";setTimeout(()=>{if(c.dataset.c){delete c.dataset.c;c.textContent="기록 지우기";}},4000);}
+};
+function setStyle(s){stylePick=s;["mix","card","type"].forEach(k=>$("a-"+k).classList.toggle("on",k===s));if(idx<deck.length&&!answered)show();}
+$("a-mix").onclick=()=>setStyle("mix");
+$("a-card").onclick=()=>setStyle("card");
+$("a-type").onclick=()=>setStyle("type");
+$("tp").addEventListener("submit",submitTyped);
+$("ans").addEventListener("input",()=>{$("ans-err").textContent="";});
+function setMode(m){modePick=m;["mix","see","hear"].forEach(k=>$("m-"+k).classList.toggle("on",k===m));if(idx<deck.length&&!answered)show();}
+$("m-mix").onclick=()=>setMode("mix");
+$("m-see").onclick=()=>setMode("see");
+$("m-hear").onclick=()=>setMode("hear");
+
+function renderChart(){
+  const order=["","k","s","t","n","h","m","y","r","w"],cols="aiueo";
+  let html="";
+  const cell=k=>k?'<div class="cell'+(groupOf(k[0])?" conf":"")+'"><span class="kk">'+k[0]+'</span><span class="rr">'+k[1]+' · '+k[2]+'</span></div>':'<div class="cell blank"></div>';
+  order.forEach(r=>{for(const v of cols)html+=cell(K.find(k=>k[1]!=="n"&&rowOf(k)===r&&colOf(k)===v));});
+  html+=cell(byC["ン"])+cell()+cell()+cell()+cell();
+  $("cgrid").innerHTML=html;
+}
+$("chart-btn").onclick=()=>{
+  const c=$("chart"),open=c.hidden;
+  if(open&&!$("cgrid").innerHTML)renderChart();
+  c.hidden=!open;
+  $("chart-btn").textContent=open?"전체 닫기":"전체 보기";
+  $("chart-btn").setAttribute("aria-expanded",String(open));
+};
+applyPrefs();
+reset();
+connect();
+</script>
+
+</body>
+</html>
