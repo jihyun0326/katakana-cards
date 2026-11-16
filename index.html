@@ -114,8 +114,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .meter span{display:block;height:100%;background:var(--no)}
 .done{font-size:12px;padding:1px 8px;border-radius:6px;background:var(--ok-bg);color:var(--ok);margin-left:4px;font-family:var(--ui)}
 .empty{font-size:13px;color:var(--muted);padding:8px 0}
-.toast{position:fixed;left:50%;bottom:calc(32px + env(safe-area-inset-bottom, 0px));transform:translate(-50%,12px);background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-line);border-radius:999px;padding:10px 22px;font-size:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:10}
-.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.9);background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-line);border-radius:20px;padding:20px 40px;font-size:30px;font-weight:700;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:10}
+.toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 @media (prefers-reduced-motion:reduce){.bar div,.toast{transition:none}}
 </style>
 </head>
@@ -451,7 +451,7 @@ function grade(ok,extra){
   $("nx").textContent=idx===deck.length-1?"결과 보기 →":"다음 →";
   $("nx").hidden=false;
   if(ok){
-    toast("굿잡!");
+    toast("Good Job!");
     const at=idx;
     clearTimeout(autoNext);
     autoNext=setTimeout(()=>{if(answered&&idx===at)$("nx").click();},1000);
