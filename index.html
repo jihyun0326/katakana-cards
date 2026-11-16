@@ -97,9 +97,12 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cell.conf .rr{color:var(--warn)}
 .cell.blank{border:0}
 @media (max-width:400px){.cell .kk{font-size:22px}}
-.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:38px}
-.fb{font-size:14px;color:var(--muted)}
-.fb.ok{color:var(--ok)} .fb.no{color:var(--no)}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:6px 6px 6px 14px;border-radius:12px;border:1px solid transparent}
+.foot:has(.fb.no){background:var(--no-bg);border-color:var(--no-line)}
+.foot:has(.fb.ok){background:var(--ok-bg);border-color:var(--ok-line)}
+.next{height:38px;padding:0 18px;font-size:14px}
+.fb{font-size:14px;color:var(--muted);min-width:0}
+.fb.ok{color:var(--ok);font-weight:500} .fb.no{color:var(--no);font-weight:500}
 .next{white-space:nowrap}
 .chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:520px}
 .chip{font-size:13px;padding:3px 10px;border-radius:8px;background:var(--no-bg);color:var(--no)}
@@ -175,6 +178,10 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   <div class="bar"><div id="bar"></div></div>
   <div class="q" id="q"><span class="hint">카드를 준비하는 중…</span></div>
+  <div class="foot">
+    <span class="fb" id="fb"></span>
+    <button class="btn primary next" id="nx" hidden>다음 →</button>
+  </div>
   <div class="grid" id="g"></div>
   <form class="type" id="tp" hidden autocomplete="off">
     <div class="type-row">
@@ -196,10 +203,6 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <button class="btn" type="button" id="dr-no">틀렸어요</button>
       <button class="btn primary" type="button" id="dr-ok">맞았어요</button>
     </div>
-  </div>
-  <div class="foot">
-    <span class="fb" id="fb"></span>
-    <button class="btn next" id="nx" hidden>다음 →</button>
   </div>
 
   <section class="log">
