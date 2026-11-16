@@ -118,6 +118,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .done{font-size:12px;padding:1px 8px;border-radius:6px;background:var(--ok-bg);color:var(--ok);margin-left:4px;font-family:var(--ui)}
 .empty{font-size:13px;color:var(--muted);padding:8px 0}
 .toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.9);background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-line);border-radius:20px;padding:20px 40px;font-size:30px;font-weight:700;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:10}
+.toast{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.toast .emo{font-size:48px;line-height:1}
 .toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 @media (prefers-reduced-motion:reduce){.bar div,.toast{transition:none}}
 </style>
@@ -454,15 +456,15 @@ function grade(ok,extra){
   $("nx").textContent=idx===deck.length-1?"결과 보기 →":"다음 →";
   $("nx").hidden=false;
   if(ok){
-    toast("Good Job!");
+    toast(rnd(["🎉","🥳","👏","✨","💮","🌸","😺","🍡"]),"Good Job!");
     const at=idx;
     clearTimeout(autoNext);
     autoNext=setTimeout(()=>{if(answered&&idx===at)$("nx").click();},1000);
   }else if(style==="card")$("nx").focus({preventScroll:true});
 }
 let autoNext=null,toastT=null;
-function toast(t){
-  const el=$("toast");el.textContent=t;el.classList.add("on");
+function toast(emo,t){
+  const el=$("toast");el.innerHTML='<span class="emo" aria-hidden="true">'+emo+'</span><span>'+t+'</span>';el.classList.add("on");
   clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),900);
 }
 
