@@ -22,3 +22,7 @@
 - 전체 글자 표, 다크 테마, 소리 끄기
 
 기록은 쓰는 브라우저에 저장됩니다.
+
+## 획순 데이터
+
+획순은 [KanjiVG](https://kanjivg.tagaini.net/) (Ulrich Apel, CC BY-SA 3.0) 데이터를 사용했습니다.
