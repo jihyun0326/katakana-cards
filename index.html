@@ -114,7 +114,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .meter span{display:block;height:100%;background:var(--no)}
 .done{font-size:12px;padding:1px 8px;border-radius:6px;background:var(--ok-bg);color:var(--ok);margin-left:4px;font-family:var(--ui)}
 .empty{font-size:13px;color:var(--muted);padding:8px 0}
-@media (prefers-reduced-motion:reduce){.bar div{transition:none}}
+.toast{position:fixed;left:50%;bottom:calc(32px + env(safe-area-inset-bottom, 0px));transform:translate(-50%,12px);background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-line);border-radius:999px;padding:10px 22px;font-size:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:10}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.bar div,.toast{transition:none}}
 </style>
 </head>
 <body>
@@ -209,6 +211,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div id="log"></div>
   </section>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 const KATA=[["ア","a","あ"],["イ","i","い"],["ウ","u","う"],["エ","e","え"],["オ","o","お"],["カ","ka","か"],["キ","ki","き"],["ク","ku","く"],["ケ","ke","け"],["コ","ko","こ"],["サ","sa","さ"],["シ","shi","し"],["ス","su","す"],["セ","se","せ"],["ソ","so","そ"],["タ","ta","た"],["チ","chi","ち"],["ツ","tsu","つ"],["テ","te","て"],["ト","to","と"],["ナ","na","な"],["ニ","ni","に"],["ヌ","nu","ぬ"],["ネ","ne","ね"],["ノ","no","の"],["ハ","ha","は"],["ヒ","hi","ひ"],["フ","fu","ふ"],["ヘ","he","へ"],["ホ","ho","ほ"],["マ","ma","ま"],["ミ","mi","み"],["ム","mu","む"],["メ","me","め"],["モ","mo","も"],["ヤ","ya","や"],["ユ","yu","ゆ"],["ヨ","yo","よ"],["ラ","ra","ら"],["リ","ri","り"],["ル","ru","る"],["レ","re","れ"],["ロ","ro","ろ"],["ワ","wa","わ"],["ヲ","wo","を"],["ン","n","ん"]];
@@ -447,7 +450,17 @@ function grade(ok,extra){
   $("sc").textContent=sc;$("st").textContent=st;
   $("nx").textContent=idx===deck.length-1?"결과 보기 →":"다음 →";
   $("nx").hidden=false;
-  if(style==="card")$("nx").focus({preventScroll:true});
+  if(ok){
+    toast("굿잡!");
+    const at=idx;
+    clearTimeout(autoNext);
+    autoNext=setTimeout(()=>{if(answered&&idx===at)$("nx").click();},1000);
+  }else if(style==="card")$("nx").focus({preventScroll:true});
+}
+let autoNext=null,toastT=null;
+function toast(t){
+  const el=$("toast");el.textContent=t;el.classList.add("on");
+  clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),900);
 }
 
 function finish(){
@@ -465,7 +478,7 @@ function finish(){
 
 function pickSet(s){set=s;document.querySelectorAll("[data-set]").forEach(x=>x.classList.toggle("on",x.dataset.set===s));reset();}
 document.querySelectorAll("[data-set]").forEach(x=>x.onclick=()=>pickSet(x.dataset.set));
-$("nx").onclick=()=>{idx++;show();};
+$("nx").onclick=()=>{clearTimeout(autoNext);idx++;show();};
 $("rs").onclick=reset;
 $("clr").onclick=()=>{
   const c=$("clr");
