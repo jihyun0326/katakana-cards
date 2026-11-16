@@ -121,7 +121,13 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 <div class="wrap">
   <header>
-    <h1>カタカナ<span>가타카나 카드</span></h1>
+    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+      <h1><span id="h-jp" style="font-family:inherit;font-size:inherit;color:inherit;margin:0">カタカナ</span><span id="h-ko">가타카나 카드</span></h1>
+      <div class="seg" role="group" aria-label="글자 종류">
+        <button id="s-kata" class="on">가타카나</button>
+        <button id="s-hira">히라가나</button>
+      </div>
+    </div>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
       <span class="sync" id="sync">기록을 불러오는 중…</span>
       <button class="btn mini" id="chart-btn" aria-expanded="false" aria-controls="chart">전체 보기</button>
@@ -132,7 +138,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   <section class="chart" id="chart" hidden>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-      <h2>가타카나 전체 46자</h2>
+      <h2 id="chart-title">가타카나 전체 46자</h2>
       <span class="legend"><span class="sw"></span>헷갈리는 글자</span>
     </div>
     <div class="cgrid" id="cgrid"></div>
@@ -155,7 +161,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <div class="controls">
     <div class="seg" role="group" aria-label="문제 세트">
       <button data-set="all" class="on">전체 46자</button>
-      <button data-set="conf">헷갈리는 글자 17자</button>
+      <button data-set="conf" id="setc">헷갈리는 글자 17자</button>
       <button data-set="wrong" id="setw">틀린 글자 0</button>
     </div>
     <div class="seg" role="group" aria-label="답하는 방식">
@@ -177,7 +183,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="type-err" id="ans-err" role="alert"></div>
   </form>
   <div class="draw" id="dr" hidden>
-    <div class="pad"><canvas id="cv" aria-label="가타카나를 그리는 칸"></canvas><div class="ghost" id="ghost" hidden></div></div>
+    <div class="pad"><canvas id="cv" aria-label="글자를 그리는 칸"></canvas><div class="ghost" id="ghost" hidden></div></div>
     <div class="type-err" id="dr-err" role="alert"></div>
     <div class="draw-act" id="dr-act1">
       <button class="btn" type="button" id="dr-clr">지우기</button>
@@ -196,7 +202,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   <section class="log">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <h2>자주 틀린 가타카나</h2>
+      <h2 id="log-title">자주 틀린 가타카나</h2>
       <button class="btn" id="clr" style="font-size:12px;padding:4px 10px">기록 지우기</button>
     </div>
     <p class="sub">틀린 횟수 순 · 연속 2번 맞히면 틀린 글자 세트에서 빠져요 (기록은 남아요)</p>
@@ -205,11 +211,22 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </div>
 
 <script>
-const K=[["ア","a","あ"],["イ","i","い"],["ウ","u","う"],["エ","e","え"],["オ","o","お"],["カ","ka","か"],["キ","ki","き"],["ク","ku","く"],["ケ","ke","け"],["コ","ko","こ"],["サ","sa","さ"],["シ","shi","し"],["ス","su","す"],["セ","se","せ"],["ソ","so","そ"],["タ","ta","た"],["チ","chi","ち"],["ツ","tsu","つ"],["テ","te","て"],["ト","to","と"],["ナ","na","な"],["ニ","ni","に"],["ヌ","nu","ぬ"],["ネ","ne","ね"],["ノ","no","の"],["ハ","ha","は"],["ヒ","hi","ひ"],["フ","fu","ふ"],["ヘ","he","へ"],["ホ","ho","ほ"],["マ","ma","ま"],["ミ","mi","み"],["ム","mu","む"],["メ","me","め"],["モ","mo","も"],["ヤ","ya","や"],["ユ","yu","ゆ"],["ヨ","yo","よ"],["ラ","ra","ら"],["リ","ri","り"],["ル","ru","る"],["レ","re","れ"],["ロ","ro","ろ"],["ワ","wa","わ"],["ヲ","wo","を"],["ン","n","ん"]];
-const GROUPS=[["シ","ツ"],["ソ","ン"],["ク","ケ"],["ヌ","ス"],["マ","ム"],["ワ","ウ","フ"],["チ","テ"],["コ","ユ"]];
-const byC=Object.fromEntries(K.map(k=>[k[0],k]));
+const KATA=[["ア","a","あ"],["イ","i","い"],["ウ","u","う"],["エ","e","え"],["オ","o","お"],["カ","ka","か"],["キ","ki","き"],["ク","ku","く"],["ケ","ke","け"],["コ","ko","こ"],["サ","sa","さ"],["シ","shi","し"],["ス","su","す"],["セ","se","せ"],["ソ","so","そ"],["タ","ta","た"],["チ","chi","ち"],["ツ","tsu","つ"],["テ","te","て"],["ト","to","と"],["ナ","na","な"],["ニ","ni","に"],["ヌ","nu","ぬ"],["ネ","ne","ね"],["ノ","no","の"],["ハ","ha","は"],["ヒ","hi","ひ"],["フ","fu","ふ"],["ヘ","he","へ"],["ホ","ho","ほ"],["マ","ma","ま"],["ミ","mi","み"],["ム","mu","む"],["メ","me","め"],["モ","mo","も"],["ヤ","ya","や"],["ユ","yu","ゆ"],["ヨ","yo","よ"],["ラ","ra","ら"],["リ","ri","り"],["ル","ru","る"],["レ","re","れ"],["ロ","ro","ろ"],["ワ","wa","わ"],["ヲ","wo","を"],["ン","n","ん"]];
+const KATA_GROUPS=[["シ","ツ"],["ソ","ン"],["ク","ケ"],["ヌ","ス"],["マ","ム"],["ワ","ウ","フ"],["チ","テ"],["コ","ユ"]];
+const HIRA=KATA.map(k=>[k[2],k[1],k[0]]);
+const HIRA_GROUPS=[["あ","お"],["い","り"],["き","さ","ち"],["ぬ","め"],["ね","れ","わ"],["は","ほ"],["る","ろ"]];
+const SCRIPTS={
+  kata:{K:KATA,G:KATA_GROUPS,name:"가타카나",other:"히라가나",jp:"カタカナ",title:"가타카나 카드"},
+  hira:{K:HIRA,G:HIRA_GROUPS,name:"히라가나",other:"가타카나",jp:"ひらがな",title:"히라가나 카드"}
+};
+let S=SCRIPTS.kata,K=S.K,GROUPS=S.G,byC={},CONF=[];
+function loadScript(id){
+  S=SCRIPTS[id]||SCRIPTS.kata;K=S.K;GROUPS=S.G;
+  byC=Object.fromEntries(K.map(k=>[k[0],k]));
+  CONF=K.filter(k=>groupOf(k[0]));
+}
 const groupOf=c=>GROUPS.find(g=>g.includes(c));
-const CONF=K.filter(k=>groupOf(k[0]));
+loadScript("kata");
 const LKEY="kq_wrong_log_v1";
 const $=id=>document.getElementById(id);
 const lbl=k=>k[0]+" "+k[1]+" ("+k[2]+")";
@@ -276,7 +293,7 @@ let mode="see",set="all",deck=[],idx=0,cur,opts,answered=false,sc=0,st=0,wrong=[
 const wrongPool=()=>K.filter(k=>rec[k[0]]&&rec[k[0]].w>0&&rec[k[0]].streak<2);
 
 const PKEY="kq_prefs_v1";
-let prefs={theme:"auto",sound:true};
+let prefs={theme:"auto",sound:true,script:"kata"};
 try{Object.assign(prefs,JSON.parse(localStorage.getItem(PKEY))||{});}catch(e){}
 const TH_LABEL={auto:"테마: 자동",dark:"테마: 다크",light:"테마: 라이트"};
 function applyPrefs(){
@@ -341,7 +358,7 @@ function show(){
   if(mode==="see"){
     $("q").innerHTML=tags+'<span class="hint">이 글자는 어떻게 읽을까요?</span><span class="big">'+cur[0]+'</span>';
   }else{
-    $("q").innerHTML=tags+'<span class="hint">'+(style==="draw"?"이 발음의 가타카나를 아래 칸에 써보세요":"이 발음은 어떤 가타카나일까요?")+'</span><span class="big" style="font-family:var(--ui);font-size:64px;letter-spacing:.02em">'+cur[1]+'</span>';
+    $("q").innerHTML=tags+'<span class="hint">'+(style==="draw"?"이 발음의 "+S.name+"를 아래 칸에 써보세요":"이 발음은 어떤 "+S.name+"일까요?")+'</span><span class="big" style="font-family:var(--ui);font-size:64px;letter-spacing:.02em">'+cur[1]+'</span>';
   }
   const g=$("g");g.innerHTML="";
   g.hidden=style!=="card";$("tp").hidden=style!=="type";$("dr").hidden=style!=="draw";
@@ -354,8 +371,8 @@ function show(){
   }
   if(style==="type"){
     const inp=$("ans");inp.value="";inp.className="";inp.readOnly=false;
-    inp.placeholder=mode==="see"?"shi 또는 し":"shi, し 또는 シ";
-    $("ans-help").textContent=mode==="see"?"영어 발음이나 히라가나로 쓰세요 (si·ti·tu·hu도 정답)":"들은 소리를 영어 발음, 히라가나, 가타카나 중 편한 걸로 쓰세요";
+    inp.placeholder=mode==="see"?"shi 또는 "+K[11][2]:"shi";
+    $("ans-help").textContent=mode==="see"?"영어 발음이나 "+S.other+"로 쓰세요 (si·ti·tu·hu도 정답)":"들은 소리를 영어 발음, 히라가나, 가타카나 중 편한 걸로 쓰세요";
     $("ans-err").textContent="";$("chk").hidden=false;
     inp.focus({preventScroll:true});
     $("fb").className="fb";$("fb").textContent="";
@@ -471,7 +488,7 @@ function renderChart(){
   let html="";
   const cell=k=>k?'<div class="cell'+(groupOf(k[0])?" conf":"")+'"><span class="kk">'+k[0]+'</span><span class="rr">'+k[1]+' · '+k[2]+'</span></div>':'<div class="cell blank"></div>';
   order.forEach(r=>{for(const v of cols)html+=cell(K.find(k=>k[1]!=="n"&&rowOf(k)===r&&colOf(k)===v));});
-  html+=cell(byC["ン"])+cell()+cell()+cell()+cell();
+  html+=cell(K.find(k=>k[1]==="n"))+cell()+cell()+cell()+cell();
   $("cgrid").innerHTML=html;
 }
 $("chart-btn").onclick=()=>{
@@ -481,6 +498,19 @@ $("chart-btn").onclick=()=>{
   $("chart-btn").textContent=open?"전체 닫기":"전체 보기";
   $("chart-btn").setAttribute("aria-expanded",String(open));
 };
+function setScript(id,first){
+  prefs.script=SCRIPTS[id]?id:"kata";loadScript(prefs.script);
+  $("s-kata").classList.toggle("on",prefs.script==="kata");$("s-hira").classList.toggle("on",prefs.script==="hira");
+  $("h-jp").textContent=S.jp;$("h-ko").textContent=S.title;document.title=S.title;
+  $("chart-title").textContent=S.name+" 전체 "+K.length+"자";
+  $("setc").textContent="헷갈리는 글자 "+CONF.length+"자";
+  $("log-title").textContent="자주 틀린 "+S.name;
+  $("cgrid").innerHTML="";if(!$("chart").hidden)renderChart();
+  if(!first){applyPrefs();reset();}
+}
+$("s-kata").onclick=()=>setScript("kata");
+$("s-hira").onclick=()=>setScript("hira");
+setScript(prefs.script,true);
 applyPrefs();
 reset();
 connect();
